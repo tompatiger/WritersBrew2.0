@@ -3,7 +3,8 @@ import Foundation
 public final class LocalOllamaProvider: LLMProvider {
     public let type: LLMProviderType = .ollama
     private let hostURL: String
-    private let model: String
+    public let modelIdentifier: String
+    public let supportsStreaming: Bool = false
     
     public var isConfigured: Bool {
         !hostURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -11,7 +12,7 @@ public final class LocalOllamaProvider: LLMProvider {
     
     public init(hostURL: String = "http://localhost:11434", model: String = "llama3.2") {
         self.hostURL = hostURL
-        self.model = model
+        self.modelIdentifier = model
     }
     
     public func generateCompletion(prompt: String, systemPrompt: String) async throws -> String {
@@ -25,7 +26,7 @@ public final class LocalOllamaProvider: LLMProvider {
         request.timeoutInterval = 60
         
         let payload: [String: Any] = [
-            "model": model,
+            "model": modelIdentifier,
             "system": systemPrompt,
             "prompt": prompt,
             "stream": false
@@ -36,7 +37,7 @@ public final class LocalOllamaProvider: LLMProvider {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                throw LLMError.networkFailure("Could not reach Ollama at \(hostURL). Make sure Ollama or MLX is running.")
+                throw LLMError.networkFailure("Could not reach Ollama at \(hostURL). Make sure Ollama is running.")
             }
             
             guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],

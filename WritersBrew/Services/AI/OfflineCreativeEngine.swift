@@ -6,6 +6,8 @@ import Foundation
 public final class OfflineCreativeEngine: LLMProvider {
     public let type: LLMProviderType = .offlineCreative
     public var isConfigured: Bool { true }
+    public let modelIdentifier: String = "heuristic-templates-v1"
+    public let supportsStreaming: Bool = false
     
     public init() {}
     
@@ -76,9 +78,6 @@ public final class OfflineCreativeEngine: LLMProvider {
     }
     
     private func generateRewrite(for text: String) -> String {
-        let clean = text.replacingOccurrences(of: "Rewrite the following text with elevated style:\n", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        
         // Provide an evocative, tightened revision
         return "The air held the crisp stillness of early frost. Rather than lingering on what was lost, she turned toward the desk, where the unanswered letter lay beneath the amber light of the lamp."
     }

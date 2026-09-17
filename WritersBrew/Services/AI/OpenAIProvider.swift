@@ -3,7 +3,8 @@ import Foundation
 public final class OpenAIProvider: LLMProvider {
     public let type: LLMProviderType = .openAI
     private let apiKey: String
-    private let model: String
+    public let modelIdentifier: String
+    public let supportsStreaming: Bool = false
     
     public var isConfigured: Bool {
         !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -11,7 +12,7 @@ public final class OpenAIProvider: LLMProvider {
     
     public init(apiKey: String, model: String = "gpt-4o") {
         self.apiKey = apiKey
-        self.model = model
+        self.modelIdentifier = model
     }
     
     public func generateCompletion(prompt: String, systemPrompt: String) async throws -> String {
@@ -26,7 +27,7 @@ public final class OpenAIProvider: LLMProvider {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let payload: [String: Any] = [
-            "model": model,
+            "model": modelIdentifier,
             "messages": [
                 ["role": "system", "content": systemPrompt],
                 ["role": "user", "content": prompt]

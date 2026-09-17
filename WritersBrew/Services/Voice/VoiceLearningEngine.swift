@@ -8,10 +8,18 @@ public final class VoiceLearningEngine {
         didSet { saveVoiceSkill() }
     }
     
-    private let storageKey = "WritersBrew_VoiceSkill"
+    private let defaults: UserDefaults
+    private let storageKey: String
     
-    private init() {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
+    private convenience init() {
+        self.init(defaults: .standard)
+    }
+
+    init(defaults: UserDefaults, storageKey: String = "WritersBrew_VoiceSkill") {
+        self.defaults = defaults
+        self.storageKey = storageKey
+
+        if let data = defaults.data(forKey: storageKey),
            let saved = try? JSONDecoder().decode(VoiceSkill.self, from: data) {
             self.currentVoiceSkill = saved
         } else {
@@ -58,7 +66,7 @@ public final class VoiceLearningEngine {
     
     private func saveVoiceSkill() {
         if let data = try? JSONEncoder().encode(currentVoiceSkill) {
-            UserDefaults.standard.set(data, forKey: storageKey)
+            defaults.set(data, forKey: storageKey)
         }
     }
 }

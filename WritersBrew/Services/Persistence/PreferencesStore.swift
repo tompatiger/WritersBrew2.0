@@ -2,76 +2,111 @@ import SwiftUI
 
 @Observable
 public final class PreferencesStore {
-    public static let shared = PreferencesStore()
+    public static let shared = PreferencesStore(
+        defaults: .standard,
+        credentialStore: KeychainCredentialStore.shared
+    )
+
+    private let defaults: UserDefaults
+    private let credentialStore: any CredentialStore
+
+    /// A non-secret, user-displayable error from the most recent credential operation.
+    public var credentialError: String?
     
     // AI Providers
     public var activeProvider: LLMProviderType {
-        didSet { UserDefaults.standard.set(activeProvider.rawValue, forKey: "activeProvider") }
+        didSet { defaults.set(activeProvider.rawValue, forKey: "activeProvider") }
     }
     
     public var openAIKey: String {
-        didSet { UserDefaults.standard.set(openAIKey, forKey: "openAIKey") }
+        didSet { persistCredential(openAIKey, for: .openAI) }
     }
     
     public var anthropicKey: String {
-        didSet { UserDefaults.standard.set(anthropicKey, forKey: "anthropicKey") }
+        didSet { persistCredential(anthropicKey, for: .anthropic) }
     }
     
     public var geminiKey: String {
-        didSet { UserDefaults.standard.set(geminiKey, forKey: "geminiKey") }
+        didSet { persistCredential(geminiKey, for: .gemini) }
     }
     
     public var grokKey: String {
-        didSet { UserDefaults.standard.set(grokKey, forKey: "grokKey") }
+        didSet { persistCredential(grokKey, for: .xAI) }
     }
     
     public var ollamaURL: String {
-        didSet { UserDefaults.standard.set(ollamaURL, forKey: "ollamaURL") }
+        didSet { defaults.set(ollamaURL, forKey: "ollamaURL") }
     }
     
     // Visual & Mood
     public var currentMood: ThemeMood {
-        didSet { UserDefaults.standard.set(currentMood.rawValue, forKey: "currentMood") }
+        didSet { defaults.set(currentMood.rawValue, forKey: "currentMood") }
     }
     
     // Editor ergonomics
     public var isTypewriterScrollingEnabled: Bool {
-        didSet { UserDefaults.standard.set(isTypewriterScrollingEnabled, forKey: "isTypewriterScrollingEnabled") }
+        didSet { defaults.set(isTypewriterScrollingEnabled, forKey: "isTypewriterScrollingEnabled") }
     }
     
     public var isTypewriterSoundEnabled: Bool {
-        didSet { UserDefaults.standard.set(isTypewriterSoundEnabled, forKey: "isTypewriterSoundEnabled") }
+        didSet { defaults.set(isTypewriterSoundEnabled, forKey: "isTypewriterSoundEnabled") }
     }
     
     public var isProactiveSuggestionsEnabled: Bool {
-        didSet { UserDefaults.standard.set(isProactiveSuggestionsEnabled, forKey: "isProactiveSuggestionsEnabled") }
+        didSet { defaults.set(isProactiveSuggestionsEnabled, forKey: "isProactiveSuggestionsEnabled") }
     }
     
     public var isRealtimeAnalyzerEnabled: Bool {
-        didSet { UserDefaults.standard.set(isRealtimeAnalyzerEnabled, forKey: "isRealtimeAnalyzerEnabled") }
+        didSet { defaults.set(isRealtimeAnalyzerEnabled, forKey: "isRealtimeAnalyzerEnabled") }
     }
     
     public var editorMeasureWidth: CGFloat {
-        didSet { UserDefaults.standard.set(Double(editorMeasureWidth), forKey: "editorMeasureWidth") }
+        didSet { defaults.set(Double(editorMeasureWidth), forKey: "editorMeasureWidth") }
     }
     
     public var editorFontSize: CGFloat {
-        didSet { UserDefaults.standard.set(Double(editorFontSize), forKey: "editorFontSize") }
+        didSet { defaults.set(Double(editorFontSize), forKey: "editorFontSize") }
     }
     
     public var editorFontDesign: String { // "serif", "system", "mono"
-        didSet { UserDefaults.standard.set(editorFontDesign, forKey: "editorFontDesign") }
+        didSet { defaults.set(editorFontDesign, forKey: "editorFontDesign") }
     }
     
-    private init() {
-        let defaults = UserDefaults.standard
+    init(defaults: UserDefaults, credentialStore: any CredentialStore) {
+        self.defaults = defaults
+        self.credentialStore = credentialStore
+        self.credentialError = nil
+
         let savedProvider = defaults.string(forKey: "activeProvider") ?? LLMProviderType.offlineCreative.rawValue
-        self.activeProvider = LLMProviderType(rawValue: savedProvider) ?? .offlineCreative
-        
-        self.openAIKey = defaults.string(forKey: "openAIKey") ?? ""
-        self.anthropicKey = defaults.string(forKey: "anthropicKey") ?? ""
-        self.geminiKey = defaults.string(forKey: "geminiKey") ?? ""
-        self.grokKey = defaults.string(forKey: "grokKey") ?? ""
+        let resolvedProvider = LLMProviderType.fromPersistedValue(savedProvider) ?? .offlineCreative
+        self.activeProvider = resolvedProvider
+        defaults.set(resolvedProvider.rawValue, forKey: "activeProvider")
+
+        var migrationErrors: [String] = []
+        self.openAIKey = Self.loadAndMigrateCredential(
+            .openAI,
+            defaults: defaults,
+            credentialStore: credentialStore,
+            errors: &migrationErrors
+        )
+        self.anthropicKey = Self.loadAndMigrateCredential(
+            .anthropic,
+            defaults: defaults,
+            credentialStore: credentialStore,
+            errors: &migrationErrors
+        )
+        self.geminiKey = Self.loadAndMigrateCredential(
+            .gemini,
+            defaults: defaults,
+            credentialStore: credentialStore,
+            errors: &migrationErrors
+        )
+        self.grokKey = Self.loadAndMigrateCredential(
+            .xAI,
+            defaults: defaults,
+            credentialStore: credentialStore,
+            errors: &migrationErrors
+        )
         self.ollamaURL = defaults.string(forKey: "ollamaURL") ?? "http://localhost:11434"
         
         let savedMood = defaults.string(forKey: "currentMood") ?? ThemeMood.system.rawValue
@@ -89,5 +124,55 @@ public final class PreferencesStore {
         self.editorFontSize = fontSize > 10 ? CGFloat(fontSize) : 18.0
         
         self.editorFontDesign = defaults.string(forKey: "editorFontDesign") ?? "serif"
+
+        if !migrationErrors.isEmpty {
+            self.credentialError = migrationErrors.joined(separator: " ")
+        }
+    }
+
+    private func persistCredential(_ value: String, for provider: ProviderCredential) {
+        do {
+            if value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                try credentialStore.removeCredential(for: provider)
+            } else {
+                try credentialStore.setCredential(value, for: provider)
+            }
+            credentialError = nil
+        } catch {
+            credentialError = "Could not update the \(provider.rawValue) credential: \(error.localizedDescription)"
+        }
+    }
+
+    private static func loadAndMigrateCredential(
+        _ provider: ProviderCredential,
+        defaults: UserDefaults,
+        credentialStore: any CredentialStore,
+        errors: inout [String]
+    ) -> String {
+        let legacyValue = defaults.string(forKey: provider.legacyUserDefaultsKey) ?? ""
+
+        do {
+            if let keychainValue = try credentialStore.credential(for: provider),
+               !keychainValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                if defaults.object(forKey: provider.legacyUserDefaultsKey) != nil {
+                    defaults.removeObject(forKey: provider.legacyUserDefaultsKey)
+                }
+                return keychainValue
+            }
+
+            guard !legacyValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                if defaults.object(forKey: provider.legacyUserDefaultsKey) != nil {
+                    defaults.removeObject(forKey: provider.legacyUserDefaultsKey)
+                }
+                return ""
+            }
+
+            try credentialStore.setCredential(legacyValue, for: provider)
+            defaults.removeObject(forKey: provider.legacyUserDefaultsKey)
+            return legacyValue
+        } catch {
+            errors.append("The \(provider.rawValue) credential could not be migrated to Keychain; the legacy value was retained.")
+            return legacyValue
+        }
     }
 }

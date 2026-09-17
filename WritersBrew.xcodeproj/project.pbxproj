@@ -6,8 +6,24 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		6A0000022E70000100000001 /* WritersBrewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A0000012E70000100000001 /* WritersBrewTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6A00000A2E70000100000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5E8054D72E5991BD00987F4A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5E8054DE2E5991BD00987F4A;
+			remoteInfo = WritersBrew;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		5E8054DF2E5991BD00987F4A /* WritersBrew.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WritersBrew.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6A0000012E70000100000001 /* WritersBrewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WritersBrewTests.swift; sourceTree = "<group>"; };
+		6A0000042E70000100000001 /* WritersBrewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WritersBrewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -26,6 +42,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6A0000052E70000100000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				5E8054E12E5991BD00987F4A /* WritersBrew */,
+				6A0000032E70000100000001 /* Tests */,
 				5E8054E02E5991BD00987F4A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +65,17 @@
 			isa = PBXGroup;
 			children = (
 				5E8054DF2E5991BD00987F4A /* WritersBrew.app */,
+				6A0000042E70000100000001 /* WritersBrewTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		6A0000032E70000100000001 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				6A0000012E70000100000001 /* WritersBrewTests.swift */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -70,6 +103,26 @@
 			productReference = 5E8054DF2E5991BD00987F4A /* WritersBrew.app */;
 			productType = "com.apple.product-type.application";
 		};
+		6A0000082E70000100000001 /* WritersBrewTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6A00000D2E70000100000001 /* Build configuration list for PBXNativeTarget "WritersBrewTests" */;
+			buildPhases = (
+				6A0000062E70000100000001 /* Sources */,
+				6A0000052E70000100000001 /* Frameworks */,
+				6A0000072E70000100000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6A0000092E70000100000001 /* PBXTargetDependency */,
+			);
+			name = WritersBrewTests;
+			packageProductDependencies = (
+			);
+			productName = WritersBrewTests;
+			productReference = 6A0000042E70000100000001 /* WritersBrewTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +135,10 @@
 				TargetAttributes = {
 					5E8054DE2E5991BD00987F4A = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					6A0000082E70000100000001 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 5E8054DE2E5991BD00987F4A;
 					};
 				};
 			};
@@ -100,12 +157,20 @@
 			projectRoot = "";
 			targets = (
 				5E8054DE2E5991BD00987F4A /* WritersBrew */,
+				6A0000082E70000100000001 /* WritersBrewTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		5E8054DD2E5991BD00987F4A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6A0000072E70000100000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +187,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		6A0000062E70000100000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A0000022E70000100000001 /* WritersBrewTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6A0000092E70000100000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5E8054DE2E5991BD00987F4A /* WritersBrew */;
+			targetProxy = 6A00000A2E70000100000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		5E8054EE2E5991BF00987F4A /* Debug */ = {
@@ -305,6 +386,46 @@
 			};
 			name = Release;
 		};
+		6A00000B2E70000100000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.writersbrew.WritersBrewTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WritersBrew.app/Contents/MacOS/WritersBrew";
+			};
+			name = Debug;
+		};
+		6A00000C2E70000100000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.writersbrew.WritersBrewTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WritersBrew.app/Contents/MacOS/WritersBrew";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -322,6 +443,15 @@
 			buildConfigurations = (
 				5E8054F12E5991BF00987F4A /* Debug */,
 				5E8054F22E5991BF00987F4A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6A00000D2E70000100000001 /* Build configuration list for PBXNativeTarget "WritersBrewTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6A00000B2E70000100000001 /* Debug */,
+				6A00000C2E70000100000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

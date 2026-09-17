@@ -31,19 +31,26 @@ public final class DocumentStore {
     private let documentsFileURL: URL
     private let storyboardFileURL: URL
     
-    private init() {
+    private convenience init() {
         let fileManager = FileManager.default
         let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let writersBrewDir = appSupport.appendingPathComponent("WritersBrew", isDirectory: true)
-        
-        try? fileManager.createDirectory(at: writersBrewDir, withIntermediateDirectories: true)
-        
-        self.documentsFileURL = writersBrewDir.appendingPathComponent("library.json")
-        self.storyboardFileURL = writersBrewDir.appendingPathComponent("storyboard.json")
+
+        self.init(storageDirectoryURL: writersBrewDir, seedSampleDataIfEmpty: true)
+    }
+
+    /// An isolated initializer used by tests and future persistence migration work.
+    /// It never reads or writes the user's production library unless given that URL explicitly.
+    init(storageDirectoryURL: URL, seedSampleDataIfEmpty: Bool = false) {
+        let fileManager = FileManager.default
+        try? fileManager.createDirectory(at: storageDirectoryURL, withIntermediateDirectories: true)
+
+        self.documentsFileURL = storageDirectoryURL.appendingPathComponent("library.json")
+        self.storyboardFileURL = storageDirectoryURL.appendingPathComponent("storyboard.json")
         
         load()
         
-        if documents.isEmpty {
+        if documents.isEmpty && seedSampleDataIfEmpty {
             seedSampleData()
         }
         

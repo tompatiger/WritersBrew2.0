@@ -3,7 +3,8 @@ import Foundation
 public final class AnthropicProvider: LLMProvider {
     public let type: LLMProviderType = .anthropic
     private let apiKey: String
-    private let model: String
+    public let modelIdentifier: String
+    public let supportsStreaming: Bool = false
     
     public var isConfigured: Bool {
         !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -11,7 +12,7 @@ public final class AnthropicProvider: LLMProvider {
     
     public init(apiKey: String, model: String = "claude-3-5-sonnet-20241022") {
         self.apiKey = apiKey
-        self.model = model
+        self.modelIdentifier = model
     }
     
     public func generateCompletion(prompt: String, systemPrompt: String) async throws -> String {
@@ -27,7 +28,7 @@ public final class AnthropicProvider: LLMProvider {
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         
         let payload: [String: Any] = [
-            "model": model,
+            "model": modelIdentifier,
             "system": systemPrompt,
             "max_tokens": 2048,
             "messages": [

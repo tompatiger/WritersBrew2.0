@@ -3,7 +3,8 @@ import Foundation
 public final class GeminiProvider: LLMProvider {
     public let type: LLMProviderType = .gemini
     private let apiKey: String
-    private let model: String
+    public let modelIdentifier: String
+    public let supportsStreaming: Bool = false
     
     public var isConfigured: Bool {
         !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -11,7 +12,7 @@ public final class GeminiProvider: LLMProvider {
     
     public init(apiKey: String, model: String = "gemini-2.0-flash") {
         self.apiKey = apiKey
-        self.model = model
+        self.modelIdentifier = model
     }
     
     public func generateCompletion(prompt: String, systemPrompt: String) async throws -> String {
@@ -19,7 +20,7 @@ public final class GeminiProvider: LLMProvider {
             throw LLMError.missingAPIKey("Google Gemini")
         }
         
-        let urlString = "https://generativelanguage.googleapis.com/v1beta/models/\(model):generateContent?key=\(apiKey)"
+        let urlString = "https://generativelanguage.googleapis.com/v1beta/models/\(modelIdentifier):generateContent?key=\(apiKey)"
         guard let url = URL(string: urlString) else {
             throw LLMError.invalidResponse("Invalid Gemini API URL")
         }

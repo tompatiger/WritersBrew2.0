@@ -15,6 +15,10 @@ public struct GhostWriterSidebar: View {
     
     private var aiService = AIService.shared
     private var voiceEngine = VoiceLearningEngine.shared
+
+    private var providerCapability: ProviderCapability {
+        aiService.currentProviderCapability
+    }
     
     public var body: some View {
         VStack(spacing: 0) {
@@ -26,6 +30,10 @@ public struct GhostWriterSidebar: View {
             
             // Quick Creative Block Breaker Tools Bar
             creativeActionsBar
+
+            if !providerCapability.isAvailable || !providerCapability.isConfigured {
+                providerConfigurationBanner
+            }
             
             Divider()
                 .opacity(0.2)
@@ -88,7 +96,7 @@ public struct GhostWriterSidebar: View {
                 Text("Ghost Writer")
                     .font(.system(size: 13, weight: .semibold))
                 
-                Text(PreferencesStore.shared.activeProvider.rawValue)
+                Text("\(providerCapability.providerName) · \(providerCapability.model) · \(providerCapability.executionLocation.rawValue)")
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -126,6 +134,7 @@ public struct GhostWriterSidebar: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+                .disabled(!providerCapability.isAvailable || !providerCapability.isConfigured)
                 
                 // Continue button
                 Button {
@@ -136,6 +145,7 @@ public struct GhostWriterSidebar: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+                .disabled(!providerCapability.isAvailable || !providerCapability.isConfigured)
                 
                 // Expand Sensory button
                 Button {
@@ -146,10 +156,21 @@ public struct GhostWriterSidebar: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
+                .disabled(!providerCapability.isAvailable || !providerCapability.isConfigured)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
         }
+    }
+
+    private var providerConfigurationBanner: some View {
+        Label(providerCapability.statusMessage, systemImage: "exclamationmark.triangle.fill")
+            .font(.system(size: 11))
+            .foregroundStyle(.orange)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.orange.opacity(0.08))
     }
     
     private var emptyStateView: some View {
@@ -248,6 +269,7 @@ public struct GhostWriterSidebar: View {
                 .onSubmit {
                     sendMessage()
                 }
+                .disabled(!providerCapability.isAvailable || !providerCapability.isConfigured)
             
             Button {
                 sendMessage()
@@ -257,7 +279,12 @@ public struct GhostWriterSidebar: View {
                     .foregroundStyle(inputPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.secondary.opacity(0.4) : Color.accentColor)
             }
             .buttonStyle(.plain)
-            .disabled(inputPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isStreaming)
+            .disabled(
+                inputPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    || isStreaming
+                    || !providerCapability.isAvailable
+                    || !providerCapability.isConfigured
+            )
         }
         .padding(12)
     }

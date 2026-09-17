@@ -30,34 +30,18 @@ public final class AIService {
     
     private init() {}
     
-    private func getProvider() -> LLMProvider {
-        let prefs = PreferencesStore.shared
-        switch prefs.activeProvider {
-        case .offlineCreative:
-            return OfflineCreativeEngine()
-        case .openAI:
-            if !prefs.openAIKey.isEmpty {
-                return OpenAIProvider(apiKey: prefs.openAIKey)
-            }
-            return OfflineCreativeEngine()
-        case .anthropic:
-            if !prefs.anthropicKey.isEmpty {
-                return AnthropicProvider(apiKey: prefs.anthropicKey)
-            }
-            return OfflineCreativeEngine()
-        case .gemini:
-            if !prefs.geminiKey.isEmpty {
-                return GeminiProvider(apiKey: prefs.geminiKey)
-            }
-            return OfflineCreativeEngine()
-        case .grok:
-            if !prefs.grokKey.isEmpty {
-                return OpenAIProvider(apiKey: prefs.grokKey, model: "grok-beta")
-            }
-            return OfflineCreativeEngine()
-        case .ollama:
-            return LocalOllamaProvider(hostURL: prefs.ollamaURL)
-        }
+    public var currentProviderCapability: ProviderCapability {
+        LLMProviderFactory.capability(
+            for: PreferencesStore.shared.activeProvider,
+            preferences: PreferencesStore.shared
+        )
+    }
+
+    private func getProvider() throws -> any LLMProvider {
+        try LLMProviderFactory.makeProvider(
+            for: PreferencesStore.shared.activeProvider,
+            preferences: PreferencesStore.shared
+        )
     }
     
     // MARK: - Context Assembly
@@ -246,6 +230,7 @@ public final class AIService {
             )
             return suggestion.trimmingCharacters(in: .whitespacesAndNewlines)
         } catch {
+            self.lastError = error.localizedDescription
             return nil
         }
     }
@@ -268,6 +253,12 @@ public final class AIService {
         ) + "\n\nCURRENT DOCUMENT EXCERPT:\n\"\"\"\n\(documentContext.suffix(2000))\n\"\"\""
         
         let lastUserMessage = messages.last(where: { $0.role == .user })?.content ?? "Help me brainstorm this scene."
-        return getProvider().streamCompletion(prompt: lastUserMessage, systemPrompt: systemPrompt)
+        do {
+            return try getProvider().streamCompletion(prompt: lastUserMessage, systemPrompt: systemPrompt)
+        } catch {
+            return AsyncThrowingStream { continuation in
+                continuation.finish(throwing: error)
+            }
+        }
     }
 }
